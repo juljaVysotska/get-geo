@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Add a new layer to a slot</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .geo {
+      position: fixed;
+      z-index: 10;
+      background-color: white;
+      top: 10px;
+      left: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="geo">
+
+    <h1>HTML Geolocation</h1>
+    <p>Click the button to get your coordinates.</p>
+
+    <button onclick="getLocation()">Try It</button>
+
+    <p id="demo"></p>
+  </div>
+  <div id="map"></div>
+
+  <script>
+    const loc = {};
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+      } else {
+        alert("Geolocation is not supported by this browser");
+      }
+    }
+    function showPosition(position) {
+      alert("Latitude: " + position.coords.latitude,
+        "Longitude: " + position.coords.longitude);
+
+      loc.lat = position.coords.latitude;
+      loc.lon = position.coords.longitude;
+    }
+
+    // TO MAKE THE MAP APPEAR YOU MUST
+    // ADD YOUR ACCESS TOKEN FROM
+    // https://account.mapbox.com
+    mapboxgl.accessToken = 'pk.eyJ1IjoidG9wb2wiLCJhIjoiY2lndjM4eDNxMDA0M3Zma3JiOGRmcGNyOSJ9.tPBrXFyMAspRCTjyVKmx8A';
+    const map = new mapboxgl.Map({
+      container: 'map',
+      // You can add layers to the predetermined slots within the Standard style basemap.
+      style: 'mapbox://styles/mapbox/standard',
+      center: [-74.0060152, 40.7127281],
+      zoom: 5,
+      // maxZoom: 6
+    });
+
+    map.on('style.load', () => {
+
+
+    });
+
+    map.on('click', () => {
+      console.log(loc);
+
+
+      map.addSource('points', {
+        type: 'geojson',
+        data: {
+          'type': 'FeatureCollection',
+          'features': [
+            {
+              'type': 'Feature',
+              'properties': {},
+              'geometry': {
+                'coordinates': [loc.lon, loc.lat],
+                'type': 'Point'
+              }
+            }
+          ]
+        }
+      });
+
+      // Apply 'within' expression to points
+      // Routes within Colorado have 'circle-color': '#f55442'
+      // Fallback values (routes not within Colorado) have 'circle-color': '#484848'
+      map.addLayer({
+        'id': 'points',
+        'type': 'circle',
+        'source': 'points',
+        'layout': {},
+        'paint': {
+          'circle-color': '#f00',
+          'circle-radius': 10
+        }
+      });
+
+      // const bounds = new mapboxgl.LngLatBounds(
+      //   [loc.lon,
+      //   loc.lat,]
+
+      // );
+      // map.fitBounds(bounds, {
+      //   padding: 20
+      // });
+
+    })
+  </script>
+
+</body>
+
+</html>
